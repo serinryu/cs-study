@@ -4,8 +4,8 @@
 
 
 * 리스트
-    * 순차 리스트
-    * 연결 리스트
+    * 순차 리스트(ArrayList)
+    * 연결 리스트(LinkedList)
         * 단순 연결 리스트(Singly Linked List)
         * 이중 연결 리스트(Doubly Linked List)
 * 집합
