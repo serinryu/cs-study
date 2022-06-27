@@ -1,0 +1,182 @@
+# 연결리스트를 이용한 Queue (큐) 구현하기
+
+#### 기억해야 할 점:
+- 선입선출의 대표적 자료구조인 Queue을 구현하고자 한다. 
+- Java 에서 제공하고 있는 Queue는 **인터페이스(Interface)** 고 이 Queue Interface를 구현하는 라이브러리는 크게 ArrayDeque, LinkedList, PriorityQueue가 있다.
+- Queue 구현 방법
+  - 물론 Queue 를 구현하는 대개, LinkedList로 구현한 큐가 쓰이지만, 상황에 따라 ArrayDeque나 PriorityQueue처럼 **내부적으로 배열을 사용** 하여 구현하여 사용하고 있는 큐 자료구조도 있기 때문에 이번에는 배열을 사용하여 구현하고자 한다.
+```java
+Queue<Integer> q = new LinkedList<>(); //LinkedList로 구현한 큐
+Queue<Integer> q = new ArrayDeque<>(); //ArrayDeque로 구현한 큐
+Queue<Integer> q = new PriorityQueue<>(); //PriorityQueue로 구현한 큐
+```
+
+#### 연결리스트를 이용한 큐의 특징:
+- 배열 대신 연결리스트로 구현하게 될 경우 위와같은 단점들이 해결된다. 각 데이터들을 노드(node) 객체에 담고 노드 간 서로 연결해주기 때문에 배열처럼 요소 개수에 따라 늘려주거나 줄여줄 필요도 없고 삽입, 삭제 때는 연결 된 링크만 끊어주거나 이어주면 되기 때문에 관리면에서도 편하다. 
+- 연결 리스트를 통해 큐(Queue)를 구현하면 되는 것이다. 구현 방식은 단일 연결리스트(단방향 연결리스트)와 진짜 거의 다를게 없기 때문에 연결리스트를 구현해보셨다면 쉽게 구현할 수 있을 것이다.
+- 연결 리스트를 이용한 큐는 Linked Queue, 혹은 LinkedList-Queue 이라고 불린다.
+
+
+#### 참고:
+- [자바 공식 문서](https://docs.oracle.com/javase/8/docs/api/java/util/Queue.html)
+이 모든 것을 다 구현해보는 것은 무리가 있기에, 가장 핵심적인 메소드들 정도만 구현해보도록 하겠다. 
+- [개념설명](https://st-lab.tistory.com/184?category=856997)
+
+## LinkedListQueue.java
+```java
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.NoSuchElementException;
+ 
+public class LinkedListQueue<E> {
+ 
+  // 노드 그 자체
+  private class Node<E> {
+
+    E data;
+    Node<E> next;	// 다음 노드를 가리키는 역할을 하는 변수
+
+    Node(E data) {
+      this.data = data;
+      this.next = null;
+    }
+  }
+ 
+	private Node<E> head;
+	private Node<E> tail;
+	private int size = 0;
+	
+	public LinkedListQueue() {
+		this.head = null;
+		this.tail = null;
+	}
+	
+	@Override
+	public boolean offer(E value) { // 뒤에 추가 
+		Node<E> newNode = new Node<E>(value);
+		
+		// 비어있을 경우 
+		if(size == 0) {
+			head = newNode;
+		}
+		// 그 외의 경우 마지막 노드(tail)의 다음 노드(next)가 새 노드를 가리키도록 한다.
+		else {
+			tail.next = newNode;
+		}
+		/**
+		 * tail이 가리키는 노드를 새 노드로 바꿔준다.
+		 */
+		tail = newNode;
+		size++;
+		return true;
+	}
+ 
+	
+	
+	@Override
+	public E poll() { // 앞 삭제
+		
+		// 삭제할 요소가 없을 경우 null 반환
+		if(size == 0) {
+			return null;
+		}
+		
+		// 삭제될 요소의 데이터를 반환하기 위한 임시 변수 
+		E element = head.data;
+		
+		// head 노드의 다음노드
+		Node<E> nextNode = head.next;
+		
+		// head의 모든 데이터들을 삭제 
+		head.data = null;
+		head.next = null;
+		
+		// head 가 가리키는 노드를 삭제된 head노드의 다음노드를 가리키도록 변경 
+		head = nextNode;
+		size--;
+		
+		return element;
+	}
+	
+	public E remove() {
+		
+		E element = poll();
+		
+		if(element == null) {
+			throw new NoSuchElementException();
+		}
+		
+		return element;
+	}
+ 
+	@Override
+	public E peek() {	
+		
+		// 요소가 없을 경우 null 반환
+		if(size == 0) {
+			return null;
+		}
+		return head.data;
+	}
+	
+	public E element() {
+		
+		E element = peek();
+		
+		if(element == null) {
+			throw new NoSuchElementException();
+		}
+		return element;
+	}
+ 
+	
+	public int size() {
+		return size;
+	}
+	
+	public boolean isEmpty() {
+		return size == 0;
+	}
+	
+	public boolean contains(Object value) {
+		
+		/**
+		 * head 데이터부터 x가 null 이 될 때까지 value랑 x의 데이터(x.data)랑
+		 * 같은지를 비교하고 같을 경우 true를 반환한다.
+		 */
+		for(Node<E> x = head; x != null; x = x.next) {
+			if(value.equals(x.data)) {
+				return true;
+			}
+		}
+		return false;
+	}
+ 
+	public void clear() {
+		
+		for(Node<E> x = head; x != null; ) {
+			
+			Node<E> next = x.next;
+			x.data = null;
+			x.next = null;
+			x = next;
+		}
+		size = 0;
+		head = tail = null;
+		
+	}	
+	
+ 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public void sort(Comparator<? super E> c) {
+		Object[] a = this.toArray(); // 배열로 바꾸기
+		Arrays.sort(a, (Comparator) c); // Arrays.sort(배열, 정렬 함수) 사용하여 정렬하기 
+ 
+		int i = 0;
+		// 정렬 된 a 배열을 큐로 복사한다.
+		for (Node<E> x = head; x != null; x = x.next, i++) {
+			x.data = (E) a[i];
+		}
+	}
+}
+```
